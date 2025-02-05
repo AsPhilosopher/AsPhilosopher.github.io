@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>crypt</title>
+</head>
+<!-- @author 陈樟杰 -->
+<body>
+    <div class="bd">
+        <div>
+            <label for="fileInput">请上传文件:</label>
+            <input type="file" id="fileInput" multiple>
+            <br><br>
+            <label for="passwordInput">请输入秘密钥:</label>
+            <input type="password" id="passwordInput">
+            <!-- 显示密码的按钮 -->
+            <button id="togglePassword">显示密钥</button>
+            <br><br>
+            <button id="cryptButton">加(解)密</button>
+        </div>
+    </div>
+
+    <!-- <script src="encrypt.js"></script> -->
+</body>
+
+<style type="text/css">
+    .bd {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* 容器高度设置为视口高度 */
+    }
+</style>
+
+</html>
+
+<script>
+function replaceLastChars(str, charsToReplace, replacement) {
+    return str.substring(0, str.length - charsToReplace.length) + replacement;
+}
+
+document.getElementById('togglePassword').addEventListener('click', function() {
+    var input = document.getElementById('passwordInput');
+    if (input.type === "password") {
+        input.type = "text";
+    } else {
+        input.type = "password";
+    }
+});
+
+
+document.getElementById('cryptButton').addEventListener('click', async () => {
+    const password = document.getElementById('passwordInput').value;
+    if (password.trim() === '') {
+        alert("密码不能为空");
+        return;
+    }
+
+    const files = document.getElementById('fileInput').files;
+    console.log(files);
+
+    if (files == null || files.length == 0) {
+        alert("文件不能为空");
+        return;
+    }
+
+    for (i=0;i<files.length;i++) {
+        var file = files[i];
+        readAndCryptFile(file, password);
+    }
+
+
+    // const file = document.getElementById('fileInput').files[0];
+
+    /*if (!file) {
+        alert("文件不能为空");
+        return;
+    }*/
+});
+
+function readAndCryptFile(file, password) {
+     var name = file.name;
+        if (file) {
+
+            // 保持文件类型不变
+            // const newFile = new Blob([file], { type: file.type }); 
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+
+                const arrayBuffer = e.target.result;
+                const byteArray = new Uint8Array(arrayBuffer);
+
+                // const newFile = new Blob([byteArray], {type: '' });
+
+                const newFile = new Blob([cryptFile(byteArray, password)], {type: '' });
+
+                // 创建一个可下载的链接
+                const url = URL.createObjectURL(newFile);
+                const a = document.createElement('a');
+                a.href = url;
+                // a.download = "新文件名.cyt"; // 设置新的下载文件名
+
+                var suffix = '.cyt';
+                
+                if (name.endsWith(suffix)) {
+                    name = replaceLastChars(name, suffix, '');
+                } else {
+                    name += suffix;
+                }
+
+                console.log(name);
+
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+
+                // 清理
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
+            reader.onerror = (error) => {
+                console.error('Error reading file:', error);
+                alert('文件解析错误！');
+            };
+            reader.readAsArrayBuffer(file);
+        }
+}
+
+
+function stringToNumberArray(str) {
+    const numberArray = [];
+    for (let i = 0; i < str.length; i++) {
+        numberArray.push(str.charCodeAt(i));
+    }
+    return numberArray;
+}
+
+// 对数字数组和字节数组进行异或运算
+function xorArrays(byteArray, numberArray) {
+    const result = new Uint8Array(byteArray.length);
+    for (let i = 0; i < byteArray.length; i++) {
+        // 将数字转换为一个字节（0-255）并进行异或运算
+
+        result[i] = byteArray[i] ^ (numberArray[i%numberArray.length] & 0xFF);
+    }
+    return result;
+}
+
+
+function cryptFile(byteArray, password) {
+    return xorArrays(byteArray, stringToNumberArray(password));
+}
+
+</script>
