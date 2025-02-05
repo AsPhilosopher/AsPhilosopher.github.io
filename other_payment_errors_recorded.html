@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<!-- @author 陈樟杰 -->
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>其他支付款项用途检测</title>
+  <script>
+
+    const map = new Map();
+    map.set("采购", "采购支付");
+    map.set("工程", "工程支付");
+    map.set("务工", "务工支付");
+    map.set("会务", "会务误工支付");
+    map.set("误工", "务工支付或会务误工支付");
+    map.set("补助", "补助救助支付");
+    map.set("救助", "补助救助支付");
+    map.set("建设", "工程支付");
+
+    const keywords = Array.from(map.keys());
+
+    function checkInput() {
+      // 获取用户输入的值
+      const userInput = document.getElementById("userInput").value;
+      let found = false;
+      const hitKeywords = [];
+
+      // 遍历关键字数组，检查是否包含关键字
+      for (let i = 0; i < keywords.length; i++) {
+        if (userInput.includes(keywords[i])) {
+          found = true;
+          hitKeywords.push(keywords[i]);
+        }
+      }
+
+      // 如果找到关键字，弹出提示框
+      if (found) {
+        var alt = "输入包含关键字！";
+        for (let i = 0; i < hitKeywords.length; i++) {
+            alt += "\n包含关键字：" + hitKeywords[i] + "，";
+            alt += "或可使用：" + map.get(hitKeywords[i]);
+        }
+        alert(alt);
+      } else {
+        alert("输入不包含关键字！或可使用其他支付");
+      }
+    }
+  </script>
+</head>
+<body>
+  <div class="bd">
+    <div>
+      <h1>其他支付款项用途检测工具</h1>
+      <label for="userInput">请输入款项用途：</label>
+      <input type="text" id="userInput" placeholder="请输入内容">
+      <button onclick="checkInput()">检测</button>
+      <br><br><br><br><br><br>
+    </div>
+  </div>
+
+  <style type="text/css">
+    .bd {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* 容器高度设置为视口高度 */
+    }
+    </style>
+</body>
+</html>
