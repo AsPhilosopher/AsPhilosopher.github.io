@@ -1,10 +1,168 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>简单网页</title>
+    <title>引导页</title>
+    <link rel="icon" href="img/服务指南.png" type="image/png">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-top: 30px;
+        }
+
+        .website-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .website-card {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .website-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .website-card img {
+            width: 10%;
+            height: 10%;
+            object-fit: cover;
+        }
+
+        .website-card h2 {
+            padding: 15px;
+            margin: 0;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .website-card a {
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+    </style>
 </head>
+
 <body>
+    <h1>小工具</h1>
+    <div class="website-list">
+        <div class="website-card">
+            <a href="crypt_multiple.html" target="_blank">
+                <img src="img/面无表情.png" alt="文件加解密">
+                <h2>文件加解密</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="other_payment_errors_recorded.html" target="_blank">
+                <img src="img/思考.png" alt="其他支付款项用途检测">
+                <h2>其他支付款项用途检测</h2>
+            </a>
+        </div>
+    </div>
+
+    <h1>官网</h1>
+    <div class="website-list">
+        <div class="website-card">
+            <a href="http://www.zjqy.gov.cn/" target="_blank">
+                <img src="img/国徽.jpeg" alt="庆元县政府官网">
+                <h2>庆元县政府官网</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="http://www.zjqy.gov.cn/col/col1229540410/index.html" target="_blank">
+                <img src="img/党徽.jpg" alt="庆元县纪委官网">
+                <h2>庆元县纪委官网</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://jcgql.jhjw.jinhua.gov.cn/#/unend/index" target="_blank">
+                <img src="https://jcgql.jhjw.jinhua.gov.cn/favicon.ico" alt="小微权力平台">
+                <h2>小微权力平台</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://jdydt.jhjw.jinhua.gov.cn/#/wbmh/home/hometab" target="_blank">
+                <img src="http://zjjcmspublic.oss-cn-hangzhou-zwynet-d01-a.internet.cloud.zj.gov.cn/jcms_files/jcms1/web3711/site/picture/0/2010121414275564766.png" alt="监督一点通">
+                <h2>监督一点通</h2>
+            </a>
+        </div>
+    </div>
+
+    <h1>AI工具</h1>
+    <div class="website-list">
+        <div class="website-card">
+            <a href="https://kimi.moonshot.cn/" target="_blank">
+                <img src="https://statics.moonshot.cn/kimi-chat/favicon.ico" alt="Kimi">
+                <h2>Kimi</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://www.doubao.com/chat/" target="_blank">
+                <img src="https://lf-flow-web-cdn.doubao.com/obj/flow-doubao/doubao/web/logo-icon.png" alt="豆包">
+                <h2>豆包</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://chat.deepseek.com/" target="_blank">
+                <img src="https://chat.deepseek.com/favicon.svg" alt="DeepSeek">
+                <h2>DeepSeek</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://chatglm.cn/main/alltoolsdetail?lang=zh" target="_blank">
+                <img src="https://chatglm.cn/img/icons/favicon-32x32.png" alt="智谱清言">
+                <h2>智谱清言</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://xinghuo.xfyun.cn/desk" target="_blank">
+                <img src="img/讯飞星火.jpeg" alt="讯飞星火">
+                <h2>讯飞星火</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://tongyi.aliyun.com/qianwen/" target="_blank">
+                <img src="https://img.alicdn.com/imgextra/i1/O1CN01AKUdEM1qP6BQVaYhT_!!6000000005487-2-tps-512-512.png" alt="通义千问">
+                <h2>通义千问</h2>
+            </a>
+        </div>
+        <div class="website-card">
+            <a href="https://yiyan.baidu.com/" target="_blank">
+                <img src="https://nlp-eb.cdn.bcebos.com/logo/favicon.ico" alt="文心一言">
+                <h2>文心一言</h2>
+            </a>
+        </div>
+    </div>
+
+    <h1>Others</h1>
+    <div class="website-list">
+        <div class="website-card">
+            <a href="others.html" target="_blank">
+                <img src="img/酷.png" alt="Others">
+                <h2>Others</h2>
+            </a>
+        </div>
+    </div>
+
 </body>
+
 </html>
