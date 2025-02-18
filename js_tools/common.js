@@ -127,3 +127,40 @@ function formatDateString(dateStr, separator, yearPrefix) {
     // 拼接成最终的格式
     return `${year}${separator}${month}${separator}${day}`;
 }
+
+function formatDateStringBySeparator(dateStr, oriSeparator, desSeparator, yearPrefix) {
+    // 将字符串按"."分割成数组
+    const parts = dateStr.split(oriSeparator);
+
+    // 确保数组长度为3（年、月、日）
+    if (parts.length !== 3) {
+        return dateStr;
+    }
+
+    // 年份部分前补"20"
+    const year = parts[0].padStart(4, yearPrefix);
+
+    // 月和日部分补足两位数字
+    const month = parts[1].padStart(2, '0');
+    const day = parts[2].padStart(2, '0');
+
+    // 拼接成最终的格式
+    return `${year}${desSeparator}${month}${desSeparator}${day}`;
+}
+
+function isValidStr(str) {
+    return !(str == null || str == undefined || str.trim() == "");
+}
+
+function convertExcelDateToJSDate(excelDate) {
+    // 1900年1月1日到1970年1月1日的天数
+    const excelBaseDate = 25569;
+    // 一天的毫秒数
+    const msPerDay = 86400000;
+
+    // 将Excel日期序列号转换为JavaScript日期的毫秒数
+    const jsDate = new Date((excelDate - excelBaseDate) * msPerDay);
+
+    // 输出本地化格式：YYYY/MM/DD
+    return formatDateString(jsDate.toLocaleDateString("zh-CN"), "/", "20");
+}

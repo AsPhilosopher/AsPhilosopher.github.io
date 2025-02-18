@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>招投标十严禁数据处理</title>
+<!-- @author 陈樟杰 -->
+<link rel="icon" href="img/疲惫.png" type="image/png">
+<script src="js_tools/FileSaver.min.js"></script>
+<script src="js_tools/xlsx.full.min.js"></script>
+
+<script src="js_tools/common.js"></script>
+</head>
+<!-- @author 陈樟杰 -->
+<body>
+    <div class="bd">
+        <div style="margin-bottom: 300px;">
+            <h4>1.合并多文件数据（最后标题要记得手动修改下）</h4>
+            <h4>2.修正日期格式（如：2024.1.7->2024/01/07；24-1-7->2024/01/07）</h4>
+            <h4>3.将金额列的“元”字去了</h4>
+            <h4 style="color: red;">注意：不要改动采集表的格式</h4>
+            <br><br>
+
+            <label for="fileInput">请上传文件:</label>
+            <input type="file" id="fileInput" multiple>
+
+        </div>
+    </div>
+</body>
+
+<style type="text/css">
+    .bd {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh; /* 容器高度设置为视口高度 */
+    }
+</style>
+
+</html>
+
+<script>
+document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+class ExcelObject extends ExcelObjectParent {
+        constructor() {
+            // 调用父类构造函数
+            super();
+
+            this.序号 = "";
+            this.项目名称 = "";
+            this.项目类型 = "";
+            this.项目概况 = "";
+            this.项目预算 = "";
+            this.业主单位 = "";
+            this.项目经办人姓名 = "";
+            this.项目负责人姓名 = "";
+            this.主管领导姓名 = "";
+            this.采购方式 = "";
+            this.代理机构名称 = "";
+            this.中标单位名称 = "";
+            this.中标时间 = "";
+            this.中标价 = "";
+            this.中标价无固定总价等其他类型报价 = "";
+            this.合同签订时间 = "";
+            this.备注 = "";
+        }
+
+        doCorrect() {
+            if (typeof this.中标时间 == "number") {
+                this.中标时间 = convertExcelDateToJSDate(this.中标时间);
+            } else if (isValidStr(this.中标时间)) {
+                this.中标时间 = this.convertDate(this.中标时间);
+            }
+
+            if (typeof this.合同签订时间 == "number") {
+                this.合同签订时间 = convertExcelDateToJSDate(this.合同签订时间);
+            } else if (isValidStr(this.合同签订时间)) {
+                this.合同签订时间 = this.convertDate(this.合同签订时间);
+            }
+            
+            if (typeof this.项目预算 != "number" && isValidStr(this.项目预算)) {
+                this.项目预算 = this.项目预算.replace("元", "");
+            }
+
+            if (typeof this.中标价 != "number" && isValidStr(this.中标价)) {
+                this.中标价 = this.中标价.replace("元", "");
+            }
+        }
+
+        convertDate(date) {
+            date = formatDateStringBySeparator(date, ".", "/", "20");
+            date = formatDateStringBySeparator(date, "-", "/", "20");
+            date = formatDateString(date, "/", "20");
+            return date;
+        }
+}
+
+
+class MyFileHandler extends FileHandler {
+    constructor() {
+        // 调用父类构造函数
+        super();
+    }
+
+    handleDatas(datas) {
+        var excelObjects = [];
+        var I = 1;
+
+        datas.forEach(data => {
+            const workbook = XLSX.read(data, { type: BINARY });
+
+            workbook.SheetNames.forEach(sheetName => {
+                const worksheet = workbook.Sheets[sheetName];
+                // var jsonData = XLSX.utils.sheet_to_json(worksheet);
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+
+                // console.log(jsonData);
+                // return;
+
+                // 去除前两行（标题）
+                jsonData = jsonData.slice(2);
+
+                excelObjects = excelObjects.concat(jsonData.filter(obj => {
+                    // 去除长度只有1的无用数据
+                    return obj.length > 1;
+                }).map(obj => {
+                    var excelObject = new ExcelObject();
+                    excelObject.argumentsConstructor(obj);
+                    return excelObject;
+                }));
+                
+            });
+        });
+
+        excelObjects = excelObjects.filter(obj => {
+                obj.correct();
+                return obj.verify();
+            });
+
+        excelObjects.forEach(obj => {
+                obj.序号 = I++;
+            });
+
+
+        const newWorksheet = XLSX.utils.json_to_sheet(excelObjects, { header: null });
+        var newWorkbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, SHEET_NAME);
+
+        const wbout = XLSX.write(newWorkbook, { bookType: _XLSX, type: BINARY });
+        saveAs(new Blob([s2ab(wbout)], { type: OCTET_STREAM }), "招投标十严禁数据汇总" + getTimeStamp() + PXLSX);
+    }
+}
+
+function handleFile(event) {
+
+    const handler = new MyFileHandler();
+    handler.handleFile(event);
+    
+}
+
+</script>
