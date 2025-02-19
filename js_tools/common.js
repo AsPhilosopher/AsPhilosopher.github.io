@@ -3,6 +3,7 @@ const CHART_NUMBER = /^[A-Za-z0-9]+$/;
 const WINDOWS_PATH = /^[a-zA-Z]:/;
 // 全局匹配一个或多个空白字符（包括空格、制表符、换行符等）
 const VALID_CHART = /\s+/g
+const IS_DATE = /^\d{4}(0[1-9]|1[0-2])(0[1-9]|[12]\d|3[01])$/;
 
 const BINARY = "binary";
 const _XLSX = "xlsx";

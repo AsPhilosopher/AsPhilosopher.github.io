@@ -16,7 +16,7 @@
     <div class="bd">
         <div style="margin-bottom: 300px;">
             <h4>1.合并多文件数据（最后标题要记得手动修改下）</h4>
-            <h4>2.修正日期格式（如：2024.1.7->2024/01/07；24-1-7->2024/01/07）</h4>
+            <h4>2.修正日期格式（如：2024.1.7->2024/01/07；24-1-7->2024/01/07；20240202->2024/02/02）</h4>
             <h4>3.将金额列的“元”字去了</h4>
             <h4 style="color: red;">注意：不要改动采集表的格式</h4>
             <br><br>
@@ -41,6 +41,7 @@
 
 <script>
 document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
 
 class ExcelObject extends ExcelObjectParent {
         constructor() {
@@ -67,32 +68,36 @@ class ExcelObject extends ExcelObjectParent {
         }
 
         doCorrect() {
-            if (typeof this.中标时间 == "number") {
-                this.中标时间 = convertExcelDateToJSDate(this.中标时间);
-            } else if (isValidStr(this.中标时间)) {
-                this.中标时间 = this.convertDate(this.中标时间);
-            }
+            this.中标时间 = this.convertDate(this.中标时间);
+            this.合同签订时间 = this.convertDate(this.合同签订时间);
 
-            if (typeof this.合同签订时间 == "number") {
-                this.合同签订时间 = convertExcelDateToJSDate(this.合同签订时间);
-            } else if (isValidStr(this.合同签订时间)) {
-                this.合同签订时间 = this.convertDate(this.合同签订时间);
-            }
-            
-            if (typeof this.项目预算 != "number" && isValidStr(this.项目预算)) {
-                this.项目预算 = this.项目预算.replace("元", "");
-            }
-
-            if (typeof this.中标价 != "number" && isValidStr(this.中标价)) {
-                this.中标价 = this.中标价.replace("元", "");
-            }
+            this.项目预算 = this.convertMoney(this.项目预算);
+            this.中标价 = this.convertMoney(this.中标价);
         }
 
         convertDate(date) {
-            date = formatDateStringBySeparator(date, ".", "/", "20");
-            date = formatDateStringBySeparator(date, "-", "/", "20");
-            date = formatDateString(date, "/", "20");
+            if (IS_DATE.test(date + "")) {
+                return (date + "").replace(/(\d{4})(\d{2})(\d{2})/, "$1/$2/$3");
+            }
+            if (typeof date == "number") {
+                return convertExcelDateToJSDate(date);
+            }
+
+            if (isValidStr(date)) {
+                date = formatDateStringBySeparator(date, ".", "/", "20");
+                date = formatDateStringBySeparator(date, "-", "/", "20");
+                date = formatDateString(date, "/", "20");
+                return date;
+            }
             return date;
+        }
+
+        convertMoney(money) {
+            if (typeof money != "number" && isValidStr(money)) {
+                return money.replace("元", "");
+            }
+
+            return money;
         }
 }
 
