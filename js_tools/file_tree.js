@@ -2,8 +2,15 @@ const myFileTreeData = "myFileTreeData";
 
 class TreeNode {
     constructor(path) {
-        // 处理 Windows 路径，统一转换为正斜杠
+        // 处理 Windows 路径，统一转换为正斜杠，但保持开头格式
+        const isWindowsPath = /^[a-zA-Z]:/i.test(path);
         path = path.replace(/\\/g, '/');
+        
+        // 如果是 Windows 路径，确保开头没有斜杠
+        if (isWindowsPath && path.startsWith('/')) {
+            path = path.substring(1);
+        }
+        
         this.name = path.split('/').pop();
         this.path = path;
         this.children = new Map();
@@ -18,17 +25,15 @@ class FileTree {
     }
 
     addPath(path) {
-        // 处理 Windows 路径，统一转换为正斜杠
+        // 处理 Windows 路径，统一转换为正斜杠，但保持开头格式
+        const isWindowsPath = /^[a-zA-Z]:/i.test(path);
         path = path.replace(/\\/g, '/');
         
-        // Windows 路径特殊处理（如 C:/Users/...）
-        const isWindowsPath = /^[a-zA-Z]:/i.test(path);
-        
-        // 对于非 Windows 路径，确保以 / 开头
-        if (!isWindowsPath && !path.startsWith('/')) {
-            path = '/' + path;
+        // 如果是 Windows 路径，确保开头没有斜杠
+        if (isWindowsPath && path.startsWith('/')) {
+            path = path.substring(1);
         }
-        
+
         const parts = path.split('/').filter(part => part);
         let current = this.root;
 
@@ -36,12 +41,12 @@ class FileTree {
         if (isWindowsPath) {
             const driveLetter = parts[0];
             if (!current.children.has(driveLetter)) {
-                const node = new TreeNode(driveLetter);
+                const node = new TreeNode(driveLetter + ':');
                 node.isFile = false;
                 current.children.set(driveLetter, node);
             }
             current = current.children.get(driveLetter);
-            parts.shift(); // 移除盘符，处理剩余路径
+            parts.shift();
         }
 
         for (let i = 0; i < parts.length; i++) {
@@ -51,9 +56,11 @@ class FileTree {
             // 构建完整路径
             let fullPath;
             if (isWindowsPath) {
-                // Windows 路径保持原有格式
-                const pathParts = [parts[0], ...parts.slice(1, i + 1)];
-                fullPath = pathParts.join('/');
+                // Windows 路径，确保开头没有斜杠
+                fullPath = path.split('/').slice(0, isFile ? undefined : i + 2).join('/');
+                if (fullPath.startsWith('/')) {
+                    fullPath = fullPath.substring(1);
+                }
             } else {
                 // Unix 路径添加开头的斜杠
                 fullPath = '/' + parts.slice(0, i + 1).join('/');
@@ -266,9 +273,16 @@ function renderNode(node, container, searchTerm) {
         nameSpan.addEventListener('click', (e) => {
             e.stopPropagation();
             const isWindows = navigator.platform.includes('Win');
-            const pathToCopy = isWindows ? 
-                node.path.replace(/\//g, '\\') : 
-                (node.path.startsWith('/') ? node.path : '/' + node.path);
+            let pathToCopy = node.path;
+            if (isWindows) {
+                // Windows 路径处理：替换斜杠，不添加开头的斜杠
+                pathToCopy = pathToCopy.replace(/\//g, '\\');
+            } else {
+                // Unix 路径处理：确保以斜杠开头
+                // if (!pathToCopy.startsWith('/')) {
+                //     pathToCopy = '/' + pathToCopy;
+                // }
+            }
             navigator.clipboard.writeText(pathToCopy)
                 .then(() => alert('文件路径已复制到剪贴板！'));
         });
