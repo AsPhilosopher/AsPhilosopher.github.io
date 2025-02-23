@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>文件目录树查看器</title>
+    <link rel="icon" href="img/笑哭.png" type="image/png">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@6.5.95/css/materialdesignicons.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2196F3;
+            --hover-color: #1976D2;
+            --bg-color: #f5f5f5;
+            --card-bg: #ffffff;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .file-input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary-color);
+            background-color: rgba(33, 150, 243, 0.05);
+        }
+
+        .upload-area i {
+            font-size: 48px;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin-top: 10px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            margin-bottom: 5px;
+        }
+
+        .file-item i {
+            margin-right: 8px;
+            color: var(--primary-color);
+        }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--hover-color);
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .search-section {
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        #searchInput:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(33, 150, 243, 0.2);
+        }
+
+        .file-tree {
+            padding: 10px;
+        }
+
+        .tree-node {
+            margin: 5px 0;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .tree-node span:hover {
+            background-color: rgba(33, 150, 243, 0.1);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .folder {
+            margin-left: 20px;
+            padding-left: 10px;
+            border-left: 1px dashed #ccc;
+        }
+
+        .folder.hidden {
+            display: none;
+        }
+
+        .folder-icon::before {
+            content: "\F024B";
+            font-family: 'Material Design Icons';
+            margin-right: 5px;
+            color: #FFC107;
+        }
+
+        .file-icon::before {
+            content: "\F0214";
+            font-family: 'Material Design Icons';
+            margin-right: 5px;
+            color: #78909C;
+        }
+
+        .expanded > .folder-icon::before {
+            content: "\F024A";
+            color: #FFA000;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: #333;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .highlight {
+            background-color: #FFF176;
+            border-radius: 2px;
+            padding: 2px;
+        }
+
+        .status-text {
+            margin-left: 10px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #ccc;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .loading i {
+            animation: spin 1s infinite linear;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>文件目录树查看器</h1>
+        <p>支持多文件上传，轻松管理和查看文件目录结构</p>
+    </div>
+    
+    <div class="card">
+        <div class="file-input-section">
+            <div class="upload-area" id="dropZone">
+                <i class="mdi mdi-upload"></i>
+                <p>拖拽文件到此处或点击上传</p>
+                <input type="file" id="fileInput" accept=".txt" multiple style="display: none;">
+            </div>
+            <div class="file-list" id="fileList"></div>
+        </div>
+
+        <div class="button-container">
+            <button id="clearDataBtn" class="btn btn-danger">
+                <i class="mdi mdi-delete"></i>
+                清除保存的数据
+            </button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="search-section">
+            <input type="text" id="searchInput" placeholder="搜索文件或目录...">
+        </div>
+
+        <div class="file-tree" id="fileTree"></div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script src="js_tools/file_tree.js"></script>
+</body>
+</html> 
