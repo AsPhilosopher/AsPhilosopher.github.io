@@ -9,7 +9,8 @@ rem 设置文件根目录，后面不带换行，好像会不支持中文，沙�
 
 :: set "dirs=F:\相关文件夹"
 
-set /p dirs=请输入目录路径：
+rem set /p dirs=请输入目录路径：
+set /p dirs=请输入所有目录路径（用空格分隔）：
 
 :: set "print=C:\Users\admin\Desktop\文件目录.txt"
 
@@ -37,5 +38,16 @@ rem dir "%dirs%"
 
 :: echo "%dirs%"
 :: echo "%print%"
-dir "%dirs%" /s /b /a-d /a-h > "%print%"
+
+rem dir "%dirs%" /s /b /a-d /a-h > "%print%"
+
+for %%i in (%dirs%) do (
+    if exist "%%~i" (
+        echo 目录: %%~i
+        dir "%%~i" /s /b /a-d /a-h >> "%print%"
+    ) else (
+        echo 目录 %%~i 不存在，已跳过。 
+    )
+)
+
 pause
