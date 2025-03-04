@@ -154,7 +154,18 @@ function handleFiles(files) {
         const reader = new FileReader();
         reader.onload = (e) => {
             const content = e.target.result;
-            const paths = content.split('\n').filter(path => path.trim());
+            const paths = content.split('\n').filter(path => path.trim()).filter(path => {
+                // 找到最后一个 '/' 或 '\' 的位置
+                let lastIndex = -1;
+                const slashIndex = path.lastIndexOf('/');
+                const backSlashIndex = path.lastIndexOf('\\');
+                lastIndex = Math.max(slashIndex, backSlashIndex);
+
+                // 提取路径分隔符后的字符串部分
+                const suffix = path.substring(lastIndex + 1);
+
+                return suffix.lastIndexOf('.') > 0;
+            });
             
             // 初始化或更新文件树
             if (!fileTree) fileTree = new FileTree();
