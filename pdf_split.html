@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF 分割工具</title>
+</head>
+<body>
+    <h1>PDF 分割工具</h1>
+    <label for="tocPages">请输入目录页数：</label>
+    <input type="number" id="tocPages" value="0" min="0" />
+    <br />
+    <input type="file" id="pdfFile" accept="application/pdf" />
+    <input type="file" id="txtFile" accept=".txt" />
+    <button id="splitButton">分割 PDF</button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script>
+        document.getElementById('splitButton').addEventListener('click', async () => {
+            const pdfFile = document.getElementById('pdfFile').files[0];
+            const txtFile = document.getElementById('txtFile').files[0];
+            const tocPages = parseInt(document.getElementById('tocPages').value) || 0;
+
+            if (!pdfFile || !txtFile) {
+                alert('请上传 PDF 文件和 TXT 文件');
+                return;
+            }
+
+            // 使用 FileReader 读取 PDF 文件内容
+            const pdfBytes = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsArrayBuffer(pdfFile);
+            });
+
+            // 使用 FileReader 读取 TXT 文件内容
+            const txtContent = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = () => reject(reader.error);
+                reader.readAsText(txtFile);
+            });
+
+            const pdfDoc = await PDFLib.PDFDocument.load(pdfBytes);
+            const splitInstructions = parseInstructions(txtContent);
+
+            for (const [pageRanges, fileName] of splitInstructions) {
+                const newPdfDoc = await PDFLib.PDFDocument.create();
+                const pages = getPagesFromRanges(pdfDoc, pageRanges, tocPages);
+                for (const page of pages) {
+                    const [copiedPage] = await newPdfDoc.copyPages(pdfDoc, [page]);
+                    newPdfDoc.addPage(copiedPage);
+                }
+                const pdfBytes = await newPdfDoc.save();
+                download(pdfBytes, `${pdfFile.name}-${fileName}.pdf`);
+            }
+        });
+
+        function parseInstructions(content) {
+            const instructions = [];
+            const lines = content.split('\n');
+            for (const line of lines) {
+                const match = line.match(/^\[(.+?)\]\s*(.+)$/);
+                if (match) {
+                    const ranges = match[1].split(',').map(r => r.trim());
+                    const fileName = match[2].trim();
+                    instructions.push([ranges, fileName]);
+                }
+            }
+            return instructions;
+        }
+
+        function getPagesFromRanges(pdfDoc, ranges, tocPages) {
+            const pages = [];
+            for (const range of ranges) {
+                if (range) {
+                    const [start, end] = range.split('-').map(Number);
+                    for (let i = start + tocPages - 1; i < end + tocPages; i++) {
+                        pages.push(i);
+                    }
+                }
+            }
+            return pages;
+        }
+
+        function download(data, filename) {
+            const blob = new Blob([data], { type: 'application/pdf' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+    </script>
+</body>
+</html>
