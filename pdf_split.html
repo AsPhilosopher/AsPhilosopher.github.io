@@ -29,11 +29,33 @@
     <!-- 使用 label 包裹 input 实现自定义按钮样式 -->
     <label for="pdfFile" class="custom-file-upload">上传 PDF 文件</label>
     <input type="file" id="pdfFile" accept="application/pdf" style="display: none;">
+    <span id="pdfFileName"></span> <!-- 用于显示 PDF 文件名 -->
     <label for="txtFile" class="custom-file-upload">上传 TXT 文件</label>
     <input type="file" id="txtFile" accept=".txt" style="display: none;">
+    <span id="txtFileName"></span> <!-- 用于显示 TXT 文件名 -->
     <button id="splitButton">分割 PDF</button>
     <script src="js_tools/pdf-lib.min.js"></script>
     <script>
+        // 监听 PDF 文件选择变化
+        document.getElementById('pdfFile').addEventListener('change', function() {
+            const pdfFileNameSpan = document.getElementById('pdfFileName');
+            if (this.files.length > 0) {
+                pdfFileNameSpan.textContent = this.files[0].name;
+            } else {
+                pdfFileNameSpan.textContent = '';
+            }
+        });
+
+        // 监听 TXT 文件选择变化
+        document.getElementById('txtFile').addEventListener('change', function() {
+            const txtFileNameSpan = document.getElementById('txtFileName');
+            if (this.files.length > 0) {
+                txtFileNameSpan.textContent = this.files[0].name;
+            } else {
+                txtFileNameSpan.textContent = '';
+            }
+        });
+
         document.getElementById('splitButton').addEventListener('click', async () => {
             const pdfFile = document.getElementById('pdfFile').files[0];
             const txtFile = document.getElementById('txtFile').files[0];
