@@ -65,11 +65,14 @@ class ExcelObjectParent {
 class FileHandler {
     constructor() {
         this.datas = [];
+        this.file_names = [];
     }
 
     handleDatas(datas) {
     }
 
+    transfer_file_names(file_names) {
+    }
 
     handleFile(event) {
         const files = event.target.files;
@@ -82,6 +85,7 @@ class FileHandler {
 
         reader.onload = function(e) {
             handler.datas.push(e.target.result);
+            handler.file_names.push(files[i].name);
 
             if (i+1 == files.length) {
                 handler.handleDatas(handler.datas);

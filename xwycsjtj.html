@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小微权力异常数据统计</title>
+    <!-- @author 陈樟杰 -->
+    <link rel="icon" href="img/受伤.png" type="image/png">
+    <script src="js_tools/FileSaver.min.js"></script>
+    <script src="js_tools/xlsx.full.min.js"></script>
+
+    <script src="js_tools/common.js"></script>
+</head>
+<!-- @author 陈樟杰 -->
+
+<body>
+    <div class="bd">
+        <label for="fileInput">请上传文件:</label>
+        <input type="file" id="fileInput" multiple>
+    </div>
+</body>
+
+<style type="text/css">
+    .bd {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        /* 容器高度设置为视口高度 */
+    }
+</style>
+
+</html>
+
+<script>
+    const BULU = "补录";
+    document.getElementById('fileInput').addEventListener('change', handleFile, false);
+
+
+    class ExcelObject extends ExcelObjectParent {
+        constructor() {
+            // 调用父类构造函数
+            super();
+
+            this.地区 = "";
+            this.数值a = 0;
+            this.数值b = 0;
+            this.数值c = 0;
+        }
+
+        doCorrect() {
+            this.地区 = this.地区.split("/")[3];
+        }
+
+        convertDate(date) {
+        }
+    }
+
+
+    class MyFileHandler extends FileHandler {
+        constructor() {
+            // 调用父类构造函数
+            super();
+            this.file_names = [];
+        }
+
+        transfer_file_names(file_names) {
+            this.file_names = file_names;
+        }
+
+        handleDatas(datas) {
+            var i = 0;
+
+            datas.forEach(data => {
+                var excelObjects = [];
+                var resultObjects = [];
+                const workbook = XLSX.read(data, { type: BINARY });
+
+                workbook.SheetNames.forEach(sheetName => {
+                    const worksheet = workbook.Sheets[sheetName];
+                    // var jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, raw: true });
+
+                    // 去除标题
+                    jsonData = jsonData.slice(1);
+
+                    excelObjects = excelObjects.concat(jsonData.map(obj => {
+                        var excelObject = new ExcelObject();
+                        excelObject.argumentsConstructor(obj);
+                        return excelObject;
+                    }));
+
+                });
+
+                excelObjects = excelObjects.filter(obj => {
+                    obj.correct();
+
+                    if (this.file_names[i].includes(BULU)) {
+                        obj.数值a = parseInt(obj.数值a);
+                        obj.数值b = parseInt(obj.数值b);
+                    } else {
+                        obj.数值b = parseInt(obj.数值b);
+                        obj.数值c = parseInt(obj.数值c);
+                    }
+
+                    return obj.verify();
+                });
+
+                // console.log(excelObjects);
+
+                const myMap = new Map();
+
+                excelObjects.forEach(obj => {
+                    var val = myMap.get(obj.地区);
+                    if (val == undefined) {
+                        val = new ExcelObject();
+                        val.地区 = obj.地区;
+                        myMap.set(obj.地区, val);
+                    }
+
+                    if (this.file_names[i].includes(BULU)) {
+                        val.数值a += obj.数值a;
+                        val.数值b += obj.数值b;
+                    } else {
+                        val.数值b += obj.数值b;
+                        val.数值c += obj.数值c;
+                    }
+                });
+
+                // console.log(this.file_names[i]);
+
+                myMap.forEach((value, key) => {
+                    if (this.file_names[i].includes(BULU)) {
+                        if (value.数值a == 0) {
+                            value.数值c = "0.00%";
+                        } else {
+                            value.数值c = ((value.数值b / value.数值a) * 100).toFixed(2) + "%";
+                        }
+                    } else { // 误录
+                        if (value.数值b == 0) {
+                            value.数值a = "0.0";
+                        } else {
+                            value.数值a = ((value.数值c / value.数值b) * 1.0).toFixed(1);
+                        }
+                    }
+
+                    resultObjects.push(value);
+                });
+
+                resultObjects.sort((a, b) => a.地区.localeCompare(b.地区));
+
+                if (this.file_names[i].includes(BULU)) {
+                    let aa = 0, bb = 0;
+                    resultObjects.forEach(obj => {
+                        aa += obj.数值a;
+                        bb += obj.数值b;
+                    });
+
+                    let obj = new ExcelObject();
+                    obj.地区 = "合计";
+                    obj.数值a = aa;
+                    obj.数值b = bb;
+                    if (bb == 0) {
+                        obj.数值c = "0.00%";
+                    } else {
+                        obj.数值c = ((bb / aa) * 100).toFixed(2) + "%";
+                    }
+                    resultObjects.push(obj);
+                } else {
+                    let bb = 0, cc = 0;
+                    resultObjects.forEach(obj => {
+                        bb += obj.数值b;
+                        cc += obj.数值c;
+                    });
+
+                    let obj = new ExcelObject();
+                    obj.地区 = "合计";
+                    obj.数值b = bb;
+                    obj.数值c = cc;
+                    if (bb == 0) {
+                        obj.数值a = "0.0";
+                    } else {
+                        obj.数值a = ((cc / bb) * 1.0).toFixed(1);
+                    }
+                    resultObjects.push(obj);
+                }
+
+                // console.log(resultObjects);
+
+                const newWorksheet = XLSX.utils.json_to_sheet(resultObjects, { header: null });
+                var newWorkbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(newWorkbook, newWorksheet, SHEET_NAME);
+
+                const wbout = XLSX.write(newWorkbook, { bookType: _XLSX, type: BINARY });
+                saveAs(new Blob([s2ab(wbout)], { type: OCTET_STREAM }), this.file_names[i++] + getTimeStamp() + PXLSX);
+            });
+
+        }
+    }
+
+    function handleFile(event) {
+
+        const handler = new MyFileHandler();
+        handler.handleFile(event);
+
+    }
+
+</script>
