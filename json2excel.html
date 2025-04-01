@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON to Excel Converter</title>
+    <link rel="icon" href="img/亲吻.png" type="image/png">
+    <script src="js_tools/xlsx.full.min.js"></script>
+</head>
+
+<body>
+    <h1>上传json文件（支持多文件上传），轻松转为Excel文件~~~</h1>
+    <input type="file" id="fileInput" accept=".json" multiple>
+    <!-- <button onclick="convertToExcel()">Convert to Excel</button> -->
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', convertToExcel, false);
+
+        function convertToExcel() {
+            const fileInput = document.getElementById('fileInput');
+            const files = fileInput.files;
+
+            if (files.length === 0) {
+                alert('Please select at least one file.');
+                return;
+            }
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+
+                reader.onload = (function(file) {
+                    return function(e) {
+                        const content = e.target.result;
+                        let jsonData;
+
+                        try {
+                            jsonData = JSON.parse(content);
+                        } catch (error) {
+                            alert(`Error parsing file ${file.name}.`);
+                            return;
+                        }
+
+                        // Ensure jsonData is an array
+                        if (!Array.isArray(jsonData)) {
+                            jsonData = [jsonData];
+                        }
+
+                        // Create a new workbook
+                        const workbook = XLSX.utils.book_new();
+
+                        // Convert JSON data to worksheet
+                        const worksheet = XLSX.utils.json_to_sheet(jsonData);
+
+                        // Add worksheet to workbook
+                        XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+
+                        // Generate Excel file name based on the JSON file name
+                        const excelFileName = file.name.replace('.json', '.xlsx');
+
+                        // Generate Excel file and download
+                        XLSX.writeFile(workbook, excelFileName);
+                    };
+                })(file);
+
+                reader.readAsText(file);
+            }
+        }
+    </script>
+</body>
+
+</html>
