@@ -6,17 +6,19 @@
   <title>其他支付款项用途检测</title>
   <link rel="icon" href="img/思考.png" type="image/png">
   <style type="text/css">
-    /* 输入框样式 */
-    .input-box {
+    /* 文本框样式 */
+    .text-box {
       padding: 10px;
       font-size: 16px;
       border: 2px solid #ccc;
       border-radius: 8px;
       transition: border-color 0.3s ease;
-      width: 600px;
+      width: 300px;
+      height: 100px; /* 设置固定高度 */
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      resize: vertical; /* 允许用户垂直调整大小 */
     }
-    .input-box:focus {
+    .text-box:focus {
       border-color: #007bff;
       outline: none;
       box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
@@ -115,7 +117,7 @@
   <div class="bd">
     <h1>其他支付款项用途检测工具</h1>
     <label for="userInput">请输入<span style="color: red; font-weight: bold;">完整的款项用途</span>：</label>
-    <input type="text" id="userInput" class="input-box" placeholder="请输入内容">
+    <textarea id="userInput" class="text-box" placeholder="请输入内容"></textarea>
     <button onclick="checkInput()">检测</button>
   </div>
 
