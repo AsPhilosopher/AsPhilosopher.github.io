@@ -16,6 +16,9 @@
 
 <body>
     <div class="bd">
+        <label><h1>小微权力补录、误录数据处理</h1></label>
+    </div>
+    <div class="bd">
         <label for="fileInput">请上传文件:</label>
         <input type="file" id="fileInput" multiple>
     </div>
@@ -27,6 +30,7 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
+        height: fit-content;
         /* 容器高度设置为视口高度 */
     }
 </style>
@@ -34,7 +38,7 @@
 </html>
 
 <script>
-    const BULU = "补录";
+    const BULU = "补录", CAIGOU = "采购", GONGCHENG = "工程";
     document.getElementById('fileInput').addEventListener('change', handleFile, false);
 
 
@@ -53,8 +57,8 @@
             this.地区 = this.地区.split("/")[3];
         }
 
-        convertDate(date) {
-        }
+        /* convertDate(date) {
+        } */
     }
 
 
@@ -128,6 +132,8 @@
                     }
                 });
 
+                // console.log(myMap);
+
                 // console.log(this.file_names[i]);
 
                 myMap.forEach((value, key) => {
@@ -141,7 +147,7 @@
                         if (value.数值b == 0) {
                             value.数值a = "0.0";
                         } else {
-                            value.数值a = ((value.数值c / value.数值b) * 1.0).toFixed(1);
+                            value.数值a = ((value.数值c / value.数值b) * 1.0).toFixed(2);
                         }
                     }
 
@@ -157,16 +163,27 @@
                         bb += obj.数值b;
                     });
 
-                    let obj = new ExcelObject();
-                    obj.地区 = "合计";
-                    obj.数值a = aa;
-                    obj.数值b = bb;
+                    let eobj = new ExcelObject();
+                    eobj.地区 = "合计";
+                    eobj.数值a = aa;
+                    eobj.数值b = bb;
                     if (bb == 0) {
-                        obj.数值c = "0.00%";
+                        eobj.数值c = "0.00%";
                     } else {
-                        obj.数值c = ((bb / aa) * 100).toFixed(2) + "%";
+                        eobj.数值c = ((bb / aa) * 100).toFixed(2) + "%";
                     }
-                    resultObjects.push(obj);
+                    resultObjects.push(eobj);
+
+                    let title = new ExcelObject();
+                    var type = CAIGOU;
+                    if (this.file_names[i].includes(GONGCHENG)) {
+                        type = GONGCHENG;
+                    }
+                    title.地区 = "地区";
+                    title.数值a = type + "总量";
+                    title.数值b = type + "补录量";
+                    title.数值c = type + "补录率%"
+                    resultObjects.unshift(title);
                 } else {
                     let bb = 0, cc = 0;
                     resultObjects.forEach(obj => {
@@ -174,16 +191,23 @@
                         cc += obj.数值c;
                     });
 
-                    let obj = new ExcelObject();
-                    obj.地区 = "合计";
-                    obj.数值b = bb;
-                    obj.数值c = cc;
+                    let eobj = new ExcelObject();
+                    eobj.地区 = "合计";
+                    eobj.数值b = bb;
+                    eobj.数值c = cc;
                     if (bb == 0) {
-                        obj.数值a = "0.0";
+                        eobj.数值a = "0.0";
                     } else {
-                        obj.数值a = ((cc / bb) * 1.0).toFixed(1);
+                        eobj.数值a = ((cc / bb) * 1.0).toFixed(2);
                     }
-                    resultObjects.push(obj);
+                    resultObjects.push(eobj);
+
+                    let title = new ExcelObject();
+                    title.地区 = "地区";
+                    title.数值a = "村均误录数量";
+                    title.数值b = "村社总量";
+                    title.数值c = "误录数量"
+                    resultObjects.unshift(title);
                 }
 
                 // console.log(resultObjects);
